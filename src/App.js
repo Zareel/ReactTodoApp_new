@@ -31,6 +31,8 @@ function App() {
   useEffect(() => {
     localStorage.setItem("data", JSON.stringify(todoList));
   }, [todoList]);
+
+  
   //* delete
   const deleteTask = (id) => {
     const newTodoList = todoList.filter((item) => {
