@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import ToDo from "./components/ToDo";
+import TodoForm from "./components/TodoForm";
+import UpdateTodoForm from "./components/UpdateTodoForm";
 
 const localData = () => {
   let list = localStorage.getItem("data");
@@ -15,18 +17,15 @@ function App() {
   //* add
   const addTask = (e) => {
     e.preventDefault();
-   if(!newTask){
-    alert("please enter your task")
-   }else{
-    let task = {
-      id: todoList.length === 0 ? 1 : todoList[todoList.length - 1].id + 1,
-      taskName: newTask,
-      completed: false,
-    };
-    const newTodoList = [...todoList, task];
-    setTodoList(newTodoList);
-    setNewTask("");
-   }
+    if (!newTask) {
+      alert("Enter a task");
+    } else {
+      let num =
+        todoList.length === 0 ? 1 : todoList[todoList.length - 1].id + 1;
+      let newEntry = { id: num, taskName: newTask, status: false };
+      setTodoList([...todoList, newEntry]);
+      setNewTask("");
+    }
   };
   useEffect(() => {
     localStorage.setItem("data", JSON.stringify(todoList));
@@ -42,68 +41,68 @@ function App() {
   };
 
   //*isComplete
+  // is complete
   const isComplete = (id) => {
     setTodoList(
       todoList.map((item) => {
         if (item.id === id) {
-          return { ...item, completed: true };
+          return { ...item, status: true };
         } else {
           return item;
         }
       })
     );
   };
-  //* change task
+// editTask
+const editTask = (id) => {
+  setTodoList(
+    todoList.map((item) =>
+      item.id === id ? { ...item, isEditing: !item.isEditing } : item
+    )
+  );
+};
 
-  const editTask = (id) => {
-    let changeTask = todoList.find((item) => {
-      return item.id === id;
-    });
-    let newTodoList = todoList.filter((item) => {
-      return item.id !== id;
-    });
-    setNewTask(changeTask.taskName);
-    setTodoList(newTodoList);
-  };
+// update Task
+const updateTask = (modifiedTaskName, id, e) => {
+  setTodoList(
+    todoList.map((item) =>
+      item.id === id
+        ? { ...item, taskName: modifiedTaskName, isEditing: !item.isEditing }
+        : item
+    )
+  );
+};
 
   return (
-    <div className="bg-[#111111] text-gray-300 min-h-screen flex flex-col  gap-6 pt-24 items-center ">
-      <form className="flex gap-6">
-        <input
-          value={newTask}
-          onChange={(e) => {
-            setNewTask(e.target.value);
-          }}
-          type="text"
-          placeholder="enter your task"
-          className="bg-gray-700 text-white px-4 py-2 w-[350px] rounded-md border-none outline-none"
-          required
-        />
-        <button
-          onClick={addTask}
-          className="px-6 py-2 bg-purple-700 hover:bg-purple-800 active:bg-purple-500 rounded-md"
-        >
-          Add
-        </button>
-      </form>
-      <div className="w-[450px]">
+    <div className="bg-stone-900 text-stone-400 min-h-screen">
+    <h1 className="text-center text-4xl font-semibold py-4">TodoApp</h1>
+    <TodoForm value={newTask} setValue={setNewTask} handleSubmit={addTask} />
+    <div className="flex justify-center mt-10">
+      <div className="flex flex-col items-start gap-6">
         {todoList &&
-          todoList.map((item, index) => {
-            return (
-              <ToDo
-                key={item.id}
-                deleteTask={deleteTask}
-                item={item.taskName}
+          todoList.map((item) => {
+            return item.isEditing ? (
+              <UpdateTodoForm
                 id={item.id}
-                index={index}
-                completed={item.completed}
-                isComplete={isComplete}
+                taskName={item.taskName}
+                task={item}
                 editTask={editTask}
+                updateTask={updateTask}
+              />
+            ) : (
+              <ToDo
+                item={item}
+                isComplete={isComplete}
+                done={item.status}
+                editTask={editTask}
+                deleteTask={deleteTask}
               />
             );
           })}
       </div>
     </div>
+  </div>
+  
   );
 }
 export default App;
